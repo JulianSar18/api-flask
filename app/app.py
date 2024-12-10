@@ -4,14 +4,14 @@ from sklearn.preprocessing import StandardScaler, LabelEncoder
 import joblib
 import numpy as np
 import pandas as pd
+from flask_cors import CORS
 
-# Cargar el modelo
 model = joblib.load('app/final/random_forest_model.pkl')
 
-# Inicializar Flask
-app = Flask(__name__)
 
-# Lista de características en el mismo orden que durante el entrenamiento
+app = Flask(__name__)
+CORS(app)
+
 feature_columns = [
     'fami_educacionpadre_Educación profesional completa',
     'fami_educacionpadre_Educación profesional incompleta',
@@ -60,31 +60,23 @@ def health():
     return jsonify('True')
 @app.route('/predict', methods=['POST'])
 def predict():
-    # Obtener los datos del request
     data = request.get_json(force=True)
     
-    # Convertir datos a un DataFrame asegurando las columnas correctas
-    df = pd.DataFrame(data, index=[0])  # Cambiar el índice a [0]
+    df = pd.DataFrame(data, index=[40])
     
-    # Asegurarse de que las columnas estén en el mismo orden que durante el entrenamiento
     df = df[feature_columns]
     
-    # Preprocesar los datos de la misma manera que los datos de entrenamiento
     df = df.applymap(lambda x: 1 if x is True else 0 if x is False else x)
     
-    # Normalizar los datos
     scaler = StandardScaler()
     nuevos_datos_normalizados = scaler.fit_transform(df)
     
-    # Hacer predicciones
     prediction = model.predict(nuevos_datos_normalizados)
     
-    # Transformar las predicciones numéricas a etiquetas originales si es necesario
     label_encoder = LabelEncoder()
     label_encoder.fit(['bajo', 'medio', 'alto'])
     predicciones_etiquetas = label_encoder.inverse_transform(prediction)
     
-    # Convertir la predicción de nuevo a formato JSON
     result = {'prediction': predicciones_etiquetas.tolist()}  # Convertir a lista
     
     return jsonify(result)
