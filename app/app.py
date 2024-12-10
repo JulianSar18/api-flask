@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 # Cargar el modelo
-model = joblib.load('./final/random_forest_model.pkl')
+model = joblib.load('app/final/random_forest_model.pkl')
 
 # Inicializar Flask
 app = Flask(__name__)
@@ -55,7 +55,7 @@ feature_columns = [
     'estu_genero_F',
     'estu_genero_M'
 ]
-@app.route('/h', methods=['GET'])
+@app.route('/', methods=['GET'])
 def health():
     return jsonify('True')
 @app.route('/predict', methods=['POST'])
